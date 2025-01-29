@@ -7,6 +7,9 @@ sch-core
 [![Documentation](https://img.shields.io/badge/doxygen-online-brightgreen?logo=read-the-docs&style=flat)](http://jrl-umi3218.github.io/sch-core/doxygen/HEAD/index.html)
 
 
+NOTE: This fork of the sch-core repo is a WIP personal project. It should not be used by third parties, I strongly advise anyone reading this to use the official sch-core distribution. My changes to this code have not undergone rigourous review and testing.
+============
+
 Documentation
 -------------
 
