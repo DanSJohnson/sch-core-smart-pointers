@@ -1,4 +1,5 @@
 #include <sch/CD/CD_Scene.h>
+#include <memory>
 
 using namespace sch;
 
@@ -6,16 +7,16 @@ CD_Scene::CD_Scene(void) {}
 
 CD_Scene::~CD_Scene(void)
 {
-  for(unsigned i = 0; i < pairs_.size(); ++i)
-    for(unsigned j = 0; j < pairs_[i].size(); ++j)
-      if(pairs_[i][j] != 0x0)
-      {
-        delete pairs_[i][j];
-        pairs_[i][j] = 0x0;
-      }
+  // for(unsigned i = 0; i < pairs_.size(); ++i)
+  //   for(unsigned j = 0; j < pairs_[i].size(); ++j)
+  //     if(pairs_[i][j] != 0x0)
+  //     {
+  //       delete pairs_[i][j];
+  //       pairs_[i][j] = 0x0;
+  //     }
 }
 
-int CD_Scene::addObject(S_Object * O)
+int CD_Scene::addObject(std::shared_ptr<S_Object> O)
 {
   unsigned int i;
   /*looking for an empty place*/
@@ -31,7 +32,7 @@ int CD_Scene::addObject(S_Object * O)
 
     Point3 point;
 
-    std::vector<CD_Pair *> v;
+    std::vector<std::shared_ptr<CD_Pair>> v;
     std::vector<Scalar> vp;
 
     pairs_.push_back(v);
@@ -39,7 +40,7 @@ int CD_Scene::addObject(S_Object * O)
 
     for(unsigned int j = 0; j < i; ++j)
     {
-      pairs_[i].push_back(0x0);
+      pairs_[i].push_back(non_pair_placeholder_);
       distances_[i].push_back(0);
     }
 
@@ -58,12 +59,12 @@ int CD_Scene::addObject(S_Object * O)
 
   for(unsigned int j = 0; j < i; j++)
   {
-    pairs_[i][j] = new CD_Pair(objects_[j], O);
+    pairs_[i][j] = std::make_shared<CD_Pair>(objects_[j], O);
   }
 
   for(unsigned int j = i + 1; j < objects_.size(); ++j)
   {
-    pairs_[j][i] = new CD_Pair(O, objects_[j]);
+    pairs_[j][i] = std::make_shared<CD_Pair>(O, objects_[j]);
   }
 
   return i;
@@ -75,7 +76,7 @@ int CD_Scene::sceneProximityQuery()
 
   for(unsigned int i = 0; i < pairs_.size(); ++i)
     for(unsigned int j = 0; j < pairs_[i].size(); ++j)
-      if((pairs_[i][j] != 0x0)
+      if((pairs_[i][j] != non_pair_placeholder_)
          && ((distances_[i][j] = pairs_[i][j]->getClosestPoints(witness_[i][j], witness_[j][i])) <= 0))
         ++collisions;
 

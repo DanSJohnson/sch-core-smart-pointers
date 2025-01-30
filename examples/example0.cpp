@@ -45,6 +45,7 @@
 #ifdef ENABLE_SIGFPE
 #  include <fenv.h>
 #endif
+#include <memory>
 
 using namespace sch;
 
@@ -95,13 +96,13 @@ int main(int /*argc*/, char * /*argv*/[])
   //********
   // Proximity queries
 
-  // Create a proximity-query pair of objects. It takes the addresses of the
-  // objects. The user is responsible of guaranteeing the existance of the
-  // objects at these addresses during all the period of use of the pair and
-  // desrtoying the objects at the end.
-  // Note that STL containers (vectors, deque, etc.) do not guarantee that
-  // objects remain at same address. Use them with care.
-  CD_Pair pair1(&box, &sphere);
+  // Create a proximity-query pair of objects. It takes shared pointers to the
+  // objects. This is a bit clunkier than the original implementation, but it
+  // should prevent a lot of the memory management problems that can come up
+  // when using raw pointers.
+  std::shared_ptr<S_Object> box_ptr = std::make_shared<S_Box>(box);
+  std::shared_ptr<S_Object> sphere_ptr = std::make_shared<S_Sphere>(sphere);
+  CD_Pair pair1(box_ptr, sphere_ptr);
 
   // Are they in collision ?
   // This is the fastest proximity query as it runs GJK with the lowest
@@ -205,8 +206,9 @@ int main(int /*argc*/, char * /*argv*/[])
 
   // Creation of new pairs related to the new objects. Each pair of 3D objects
   // is then a C++ objects
-  CD_Pair pair2(&box, &super);
-  CD_Pair pair3(&sphere, &super);
+  std::shared_ptr<S_Object> super_ptr = std::make_shared<S_Superellipsoid>(super);
+  CD_Pair pair2(box_ptr, super_ptr);
+  CD_Pair pair3(sphere_ptr, super_ptr);
 
   // Our witness points
   Point3 p3, p4, p5, p6;

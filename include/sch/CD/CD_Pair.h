@@ -7,6 +7,7 @@
 #include <sch/CD_Penetration/CD_Depth.h>
 #include <sch/S_Object/S_Object.h>
 #include <sch/sch_api.h>
+#include <memory>
 
 namespace sch
 {
@@ -20,7 +21,7 @@ public:
    *destroyed before this instance \param Obj1 is a pointer to the first object \param Obj1 is a pointer to the second
    *object
    */
-  SCH_API CD_Pair(S_Object * Obj1, S_Object * Obj2);
+  SCH_API CD_Pair(std::shared_ptr<S_Object> Obj1, std::shared_ptr<S_Object> Obj2);
 
   SCH_API virtual ~CD_Pair(void);
 
@@ -88,13 +89,13 @@ public:
    *\brief returns a pointer to the ith object in the pair
    */
 
-  SCH_API S_Object * operator[](unsigned char i)
+  SCH_API std::shared_ptr<S_Object> operator[](unsigned char i)
   {
     return (i == 0) ? sObj1_ : sObj2_;
   }
 
 protected:
-  S_Object *sObj1_, *sObj2_;
+  std::shared_ptr<S_Object> sObj1_, sObj2_;
   Vector3 lastDirection_;
   int lastFeature1_, lastFeature2_;
 

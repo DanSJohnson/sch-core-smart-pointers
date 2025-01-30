@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <memory>
 #include <sch/CD_Penetration/CD_Depth.h>
 
 using namespace sch;
@@ -442,7 +443,7 @@ Scalar CD_Depth::getPenetrationDepth(Vector3 & v,
 }
 #endif // def SCH_BUILD_BSD
 
-CD_Depth::CD_Depth(S_Object * Obj1, S_Object * Obj2)
+CD_Depth::CD_Depth(std::shared_ptr<S_Object> Obj1, std::shared_ptr<S_Object> Obj2)
 : sObj1_(Obj1), sObj2_(Obj2), precision_(defaultPrecision), epsilon_(sch::epsilon)
 {
 }

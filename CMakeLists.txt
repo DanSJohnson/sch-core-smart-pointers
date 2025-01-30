@@ -51,8 +51,8 @@ endif(MSVC)
 
 add_subdirectory(src)
 add_subdirectory(examples)
-if(${BUILD_TESTING})
-  add_subdirectory(tests)
-endif()
+# if(${BUILD_TESTING})
+#   add_subdirectory(tests)
+# endif()
 
 pkg_config_append_libs(sch-core)

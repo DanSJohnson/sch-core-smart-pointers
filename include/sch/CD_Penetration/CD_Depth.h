@@ -5,6 +5,7 @@
 #include <sch/CD/CD_SimplexEnhanced.h>
 #include <sch/S_Object/S_Object.h>
 #include <sch/sch_api.h>
+#include <memory>
 
 namespace sch
 {
@@ -13,13 +14,13 @@ class CD_Depth
 {
 
 protected:
-  S_Object * sObj1_;
-  S_Object * sObj2_;
+  std::shared_ptr<S_Object> sObj1_;
+  std::shared_ptr<S_Object> sObj2_;
 
   Scalar precision_, epsilon_;
 
 public:
-  SCH_API CD_Depth(S_Object * Obj1, S_Object * Obj2);
+  SCH_API CD_Depth(std::shared_ptr<S_Object> Obj1, std::shared_ptr<S_Object> Obj2);
   SCH_API virtual ~CD_Depth(void);
 
   /*!

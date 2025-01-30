@@ -7,6 +7,7 @@
 #  include <sch/S_Object/S_Object.h>
 #  include <sch/sch_api.h>
 #  include <vector>
+#include <memory>
 
 namespace sch
 {
@@ -19,7 +20,7 @@ public:
   /*!
    * \brief Add Object to scene, returns an index that must be kept for collision detection
    */
-  SCH_API int addObject(S_Object * O);
+  SCH_API int addObject(std::shared_ptr<S_Object> O);
 
   /*!
    * \brief Withdraw an object
@@ -30,7 +31,7 @@ public:
 
   SCH_API void considerPair(int a, int b);
 
-  SCH_API CD_Pair * operator()(int a, int b) const
+  SCH_API std::shared_ptr<CD_Pair> operator()(int a, int b) const
   {
     if(a != b)
     {
@@ -42,7 +43,7 @@ public:
 
   SCH_API int sceneProximityQuery();
 
-  SCH_API S_Object * operator[](size_t i) const
+  SCH_API std::shared_ptr<S_Object> operator[](size_t i) const
   {
     return objects_[i];
   }
@@ -70,13 +71,16 @@ public:
   }
 
 protected:
-  std::vector<S_Object *> objects_;
+  std::vector<std::shared_ptr<S_Object>> objects_;
 
-  std::vector<std::vector<CD_Pair *>> pairs_;
+  std::vector<std::vector<std::shared_ptr<CD_Pair>>> pairs_;
 
   std::vector<std::vector<Point3>> witness_;
 
   std::vector<std::vector<Scalar>> distances_;
+
+  std::shared_ptr<CD_Pair> non_pair_placeholder_;
+
 };
 } // namespace sch
 #endif
