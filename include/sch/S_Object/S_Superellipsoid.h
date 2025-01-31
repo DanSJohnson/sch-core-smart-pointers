@@ -4,6 +4,7 @@
 #pragma once
 
 #include <sch/S_Object/S_ObjectNonNormalized.h>
+#include <memory>
 
 namespace sch
 {
@@ -14,7 +15,7 @@ public:
   SCH_API S_Superellipsoid(Scalar a, Scalar b, Scalar c, Scalar epsilon1, Scalar epsilon2);
   SCH_API virtual ~S_Superellipsoid(void);
 
-  SCH_API virtual S_Superellipsoid * clone() const;
+  SCH_API virtual std::shared_ptr<S_Object> clone() const;
 
   SCH_API virtual Point3 l_Support(const Vector3 & v, int & lastFeature) const;
 

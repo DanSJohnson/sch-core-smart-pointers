@@ -2,9 +2,9 @@
 
 using namespace sch;
 
-S_Cylinder * S_Cylinder::clone() const
+std::shared_ptr<S_Object> S_Cylinder::clone() const
 {
-  return new S_Cylinder(*this);
+  return std::make_shared<S_Cylinder>(*this);
 }
 
 S_Cylinder::S_Cylinder(Point3 p1, Point3 p2, Scalar radius) : p1_(p1), p2_(p2), radius_(radius)

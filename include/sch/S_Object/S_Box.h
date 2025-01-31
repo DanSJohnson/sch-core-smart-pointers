@@ -4,6 +4,7 @@
 #  pragma once
 
 #  include <sch/S_Object/S_ObjectNonNormalized.h>
+#include <memory>
 
 namespace sch
 {
@@ -19,7 +20,7 @@ public:
   SCH_API S_Box(Scalar width, Scalar height, Scalar depth);
   SCH_API virtual ~S_Box(void);
 
-  SCH_API virtual S_Box * clone() const;
+  SCH_API virtual std::shared_ptr<S_Object> clone() const;
 
   SCH_API virtual Point3 l_Support(const Vector3 & v, int & lastFeature) const;
 

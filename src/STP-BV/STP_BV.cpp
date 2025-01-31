@@ -178,11 +178,7 @@ STP_BV::STP_BV(const STP_BV & bv)
 
 STP_BV::~STP_BV()
 {
-  for(size_t i = 0; i < m_patches.size(); i++)
-  {
-    delete m_patches[i];
-  }
-  if(m_fastPatches != NULL) delete[] m_fastPatches;
+
 }
 
 STP_BV & STP_BV::operator=(const STP_BV & bv)
@@ -202,9 +198,9 @@ STP_BV & STP_BV::operator=(const STP_BV & bv)
   return *this;
 }
 
-STP_BV * STP_BV::clone() const
+std::shared_ptr<S_Object> STP_BV::clone() const
 {
-  return new STP_BV(*this);
+  return std::make_shared<STP_BV>(*this);
 }
 
 void STP_BV::computeArcPointsBetween(const Point3 & p1,
@@ -362,7 +358,7 @@ void STP_BV::constructFromFile(const std::string & filename)
   for(int i = 0; i < ssnum; ++i)
   {
     is >> sRadius >> center[0] >> center[1] >> center[2];
-    STP_SmallSphere * ss = new STP_SmallSphere(sRadius, Point3(center[0], center[1], center[2]));
+    std::shared_ptr<STP_SmallSphere> ss = std::make_shared<STP_SmallSphere>(sRadius, Point3(center[0], center[1], center[2]));
     patchesCenter.push_back(Point3(center[0], center[1], center[2]));
 
     is >> ssvvrnum;
@@ -399,7 +395,7 @@ void STP_BV::constructFromFile(const std::string & filename)
     Triangle vertices;
 
     is >> sRadius >> center[0] >> center[1] >> center[2];
-    STP_BigSphere * bigs = new STP_BigSphere(sRadius, Point3(center[0], center[1], center[2]));
+    std::shared_ptr<STP_BigSphere> bigs = std::make_shared<STP_BigSphere>(sRadius, Point3(center[0], center[1], center[2]));
     patchesCenter.push_back(Point3(center[0], center[1], center[2]));
 
     // get the vertices
@@ -441,7 +437,7 @@ void STP_BV::constructFromFile(const std::string & filename)
   }
 
   // torus
-  STP_Torus * t = NULL;
+  std::shared_ptr<STP_Torus> t = NULL;
   bool isRealTorus;
   int torusCount = 0;
 
@@ -467,7 +463,7 @@ void STP_BV::constructFromFile(const std::string & filename)
     is >> center[0] >> center[1] >> center[2];
     is >> axis[0] >> axis[1] >> axis[2];
     if(isRealTorus)
-      t = new STP_Torus(Vector3(axis[0], axis[1], axis[2]), Point3(center[0], center[1], center[2]), Scalar(cRadius),
+      t = std::make_shared<STP_Torus>(Vector3(axis[0], axis[1], axis[2]), Point3(center[0], center[1], center[2]), Scalar(cRadius),
                         Scalar(sRadius));
 
     is >> outerSTP >> cosangle >> axis[0] >> axis[1] >> axis[2];
@@ -790,7 +786,7 @@ void STP_BV::loadTreeFromFile(const std::string & treefilename, ArchiveType type
   is.close();
 }
 
-void STP_BV::addPatch(STP_Feature * patch)
+void STP_BV::addPatch(std::shared_ptr<STP_Feature> patch)
 {
   m_patches.push_back(patch);
 }
@@ -809,27 +805,25 @@ Point3 STP_BV::computeCenter(const std::vector<Point3> & points)
 
 void STP_BV::updateFastPatches()
 {
-  if(m_fastPatches != NULL)
-  {
-    delete[] m_fastPatches;
-  }
+    // Clear previous data
+    m_fastPatches.clear();
 
-  if(m_patches.size() > 0)
-  {
-    m_fastPatches = new STP_Feature *[m_patches.size()];
-    for(size_t i = 0; i < m_patches.size(); i++)
+    if (!m_patches.empty())
     {
-      m_fastPatches[i] = m_patches[i];
-    }
+        // Copy shared pointers directly
+        m_fastPatches = m_patches;
 
-    m_lastPatches = &m_fastPatches[m_patches.size()];
-    m_patchesSize = static_cast<int>(m_patches.size());
-  }
-  else
-  {
-    m_patchesSize = 0;
-    m_lastPatches = m_fastPatches = NULL;
-  }
+        // Update metadata
+        m_patchesSize = static_cast<int>(m_fastPatches.size());
+
+        // Set m_lastPatches to reference the last element
+        m_lastPatches = m_fastPatches.empty() ? nullptr : m_fastPatches.back().get();
+    }
+    else
+    {
+        m_patchesSize = 0;
+        m_lastPatches = nullptr;
+    }
 }
 
 Scalar STP_BV::supportH(const Vector3 & v) const
@@ -867,20 +861,20 @@ Point3 STP_BV::l_Support(const Vector3 & v, int & lastFeature) const
 
 Point3 STP_BV::supportNaive(const Vector3 & v) const
 {
-  std::vector<STP_Feature *>::const_iterator currentBV = m_patches.begin();
+  auto currentBV = m_patches.begin();
   bool found = false;
 
-  while((currentBV != m_patches.end()) && !(found = (*currentBV)->isHere(v)))
+  while ((currentBV != m_patches.end()) && !(found = (*currentBV)->isHere(v)))
   {
     ++currentBV;
   }
 
-  // TODO : gerer le cas ou on n'a pas trouve la zone !!!
-  if(!found)
+  // Handle the case where no valid zone is found
+  if (!found)
   {
     std::cout << "Probleme zuo naive !!!" << std::endl;
-    if(m_patches.begin() != m_patches.end())
-      return (*m_patches.begin())->support(v);
+    if (!m_patches.empty())
+      return m_patches.front()->support(v);
     else
       return Point3(0.0, 0.0, 0.0);
   }
@@ -890,20 +884,20 @@ Point3 STP_BV::supportNaive(const Vector3 & v) const
 
 Point3 STP_BV::supportFarthestNeighbour(const Vector3 & v, int & lastFeature) const
 {
-  STP_Feature * currentBV;
+  std::shared_ptr<STP_Feature> currentBV;
   // A.E. : We need to remember the previous Voronoi region we were in
 
 #ifdef REMEMBER_LAST_FEATURE
-  if(lastFeature != -1)
+  if (lastFeature != -1)
   {
-    currentBV = m_patches[lastFeature];
+    currentBV = m_patches[lastFeature]; // Get shared_ptr directly
   }
   else
   {
-    currentBV = *(m_patches.begin()); // first voronoi region search
+    currentBV = m_patches.front(); // Get first element safely
   }
 #else
-  currentBV = *(m_patches.begin()); // first voronoi region search
+  currentBV = m_patches.front(); // Get first element safely
 #endif
 
   // A.E. : the following hash table is not used in the function in its current version and is therefore commented
@@ -915,6 +909,12 @@ Point3 STP_BV::supportFarthestNeighbour(const Vector3 & v, int & lastFeature) co
   {
     lastFeature = currentBV->getNextBV(
         0); // go to the neighbour feature which common limit with the current is farthest from the vector
+
+    if (lastFeature < 0 || lastFeature >= static_cast<int>(m_patches.size()))
+    {
+      // Handle out-of-bounds access safely
+      return Point3(0.0, 0.0, 0.0);
+    }
 
     currentBV = m_patches[lastFeature];
     ++i;
@@ -934,17 +934,16 @@ Point3 STP_BV::supportFarthestNeighbour(const Vector3 & v, int & lastFeature) co
 
 Point3 STP_BV::supportFarthestNeighbourPrime(const Vector3 & v, int & lastFeature) const
 {
-  STP_Feature * currentBV;
+  std::shared_ptr<sch::STP_Feature> currentBV;
   // A.E. : We need to remember the previous Voronoi region we were in
 
 #ifdef REMEMBER_LAST_FEATURE
   if(lastFeature != -1)
     currentBV = m_patches[lastFeature];
   else
-    currentBV = *(m_patches.begin()); // first voronoi region search
-
+    currentBV = m_patches.front(); // Get first element safely
 #else
-  currentBV = *(m_patches.begin()); // first voronoi region search
+  currentBV = m_patches.front(); // Get first element safely
 #endif
 
   // A.E. : the following hash table is not used in the function in its current version and is therefore commented
@@ -958,6 +957,12 @@ Point3 STP_BV::supportFarthestNeighbourPrime(const Vector3 & v, int & lastFeatur
   {
     lastFeature = currentBV->getNextBVPrime(); // go to the neighbour feature which common limit with the current is
                                                // farthest from the vector
+
+    if (lastFeature < 0 || lastFeature >= static_cast<int>(m_patches.size()))
+    {
+      // Handle out-of-bounds access safely
+      return supportNaive(v);
+    }
 
     currentBV = m_patches[lastFeature];
     ++i;
@@ -978,17 +983,16 @@ Point3 STP_BV::supportFarthestNeighbourPrime(const Vector3 & v, int & lastFeatur
 
 Point3 STP_BV::supportFirstNeighbour(const Vector3 & v, int & lastFeature) const
 {
-  STP_Feature * currentBV;
+  std::shared_ptr<sch::STP_Feature> currentBV;
   // A.E. : We need to remember the previous Voronoi region we were in
 
 #ifdef REMEMBER_LAST_FEATURE
-  if(lastFeature != -1)
-    currentBV = m_patches[lastFeature];
+  if (lastFeature != -1)
+    currentBV = m_patches[lastFeature]; // Get shared_ptr directly
   else
-    currentBV = *(m_patches.begin()); // first voronoi region search
-
+    currentBV = m_patches.front(); // Get first element safely
 #else
-  currentBV = *(m_patches.begin()); // first voronoi region search
+  currentBV = m_patches.front(); // Get first element safely
 #endif
 
   /////A.E. : the following hash table is not used in the function in its current version and is therefore commented
@@ -1003,6 +1007,12 @@ Point3 STP_BV::supportFirstNeighbour(const Vector3 & v, int & lastFeature) const
     lastFeature = currentBV->getNextBVPrime(); // go to the neighbour feature which common limit with the current is
                                                // farthest from the vector
 
+    if (lastFeature < 0 || lastFeature >= static_cast<int>(m_patches.size()))
+    {
+      // Handle out-of-bounds case safely
+      return m_patches.empty() ? Point3(0.0, 0.0, 0.0) : m_patches.front()->support(v);
+    }
+
     currentBV = m_patches[lastFeature];
     ++i;
   }
@@ -1010,10 +1020,7 @@ Point3 STP_BV::supportFirstNeighbour(const Vector3 & v, int & lastFeature) const
   if(!found)
   {
     std::cout << "Probleme zuo first !!!" << std::endl;
-    if(m_patches.begin() != m_patches.end())
-      return (*m_patches.begin())->support(v);
-    else
-      return Point3(0.0, 0.0, 0.0);
+    return m_patches.empty() ? Point3(0.0, 0.0, 0.0) : m_patches.front()->support(v);
   }
 
   return currentBV->support(v);
@@ -1021,19 +1028,19 @@ Point3 STP_BV::supportFirstNeighbour(const Vector3 & v, int & lastFeature) const
 
 Point3 STP_BV::supportFirstNeighbourPrime(const Vector3 & v, int & lastFeature) const
 {
-  STP_Feature * currentBV;
+  std::shared_ptr<sch::STP_Feature> currentBV;
 
 #ifdef REMEMBER_LAST_FEATURE
   if(lastFeature != -1)
     currentBV = m_fastPatches[lastFeature];
   else
   {
-    currentBV = *m_fastPatches; // first voronoi region search
+    currentBV = m_fastPatches.front(); // Get first element as shared_ptr
     lastFeature = 0;
   }
 
 #else
-  currentBV = *(m_patches.begin()); // first voronoi region search
+  currentBV = m_patches.front(); // Get first element as shared_ptr
 #endif
 
   bool found = false;
@@ -1045,6 +1052,12 @@ Point3 STP_BV::supportFirstNeighbourPrime(const Vector3 & v, int & lastFeature) 
   {
     idp = lastFeature;
     lastFeature = currentBV->getNextBVPrime(); // go to the neighbour
+
+    if (lastFeature < 0 || lastFeature >= static_cast<int>(m_fastPatches.size()))
+    {
+      // Handle out-of-bounds case safely
+      return supportFarthestNeighbourPrime(v, lastFeature);
+    }
 
     currentBV = m_fastPatches[lastFeature];
     ++i;
@@ -1067,18 +1080,18 @@ Point3 STP_BV::supportFirstNeighbourPrime(const Vector3 & v, int & lastFeature) 
 
 Point3 STP_BV::supportHybrid(const Vector3 & v, int & lastFeature) const
 {
-  STP_Feature * currentBV;
+  std::shared_ptr<sch::STP_Feature> currentBV;
 
 #ifdef REMEMBER_LAST_FEATURE
   if(lastFeature != -1)
     currentBV = m_fastPatches[lastFeature];
   else
   {
-    currentBV = *m_fastPatches; // first voronoi region search
+    currentBV = m_fastPatches.front(); // Get first element as shared_ptr
     lastFeature = 0;
   }
 #else
-  currentBV = *(m_patches.begin()); // first voronoi region search
+  currentBV = m_patches.front(); // Get first element as shared_ptr
 #endif
 
   bool found = false;
@@ -1090,6 +1103,12 @@ Point3 STP_BV::supportHybrid(const Vector3 & v, int & lastFeature) const
   {
     idp = lastFeature;
     lastFeature = currentBV->getNextBVPrime(); // go to the neighbour
+
+    if (lastFeature < 0 || lastFeature >= static_cast<int>(m_fastPatches.size()))
+    {
+      // Handle out-of-bounds case safely
+      return supportFarthestNeighbourPrime(v, lastFeature);
+    }
 
     currentBV = m_fastPatches[lastFeature];
     ++i;

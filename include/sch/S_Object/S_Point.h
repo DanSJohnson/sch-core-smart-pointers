@@ -2,6 +2,7 @@
 #define _S_POINT_H
 
 #include <sch/S_Object/S_ObjectNonNormalized.h>
+#include <memory>
 
 namespace sch
 {
@@ -11,7 +12,7 @@ public:
   SCH_API S_Point();
   SCH_API ~S_Point();
 
-  SCH_API virtual S_Point * clone() const;
+  SCH_API virtual std::shared_ptr<S_Object> clone() const;
 
   SCH_API void setDisplayRadius(Scalar r);
   SCH_API Scalar getDisplayRadius() const;

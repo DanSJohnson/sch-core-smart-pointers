@@ -291,7 +291,7 @@ bool STP_SmallSphere::ray_cast(const Point3 & source, const Point3 & target, Sca
   return false;
 }
 
-STP_Feature * STP_SmallSphere::clone() const
+std::shared_ptr<STP_Feature> STP_SmallSphere::clone() const
 {
-  return new STP_SmallSphere(*this);
+  return std::make_shared<STP_SmallSphere>(*this);
 }

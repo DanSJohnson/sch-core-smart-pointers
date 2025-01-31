@@ -3,6 +3,8 @@
 #  define _S_SPHERE_H
 
 #  include <sch/S_Object/S_ObjectNormalized.h>
+#include <memory>
+
 
 namespace sch
 {
@@ -17,7 +19,7 @@ public:
   SCH_API S_Sphere(const Scalar & radius);
   SCH_API virtual ~S_Sphere();
 
-  SCH_API virtual S_Sphere * clone() const;
+  SCH_API virtual std::shared_ptr<S_Object> clone() const;
 
   SCH_API virtual Point3 l_Support(const Vector3 & v, int & lastFeature) const;
 

@@ -13,6 +13,9 @@
 #    include <sch/boost/archive/detail/oserializer.hpp>
 #  endif
 #  include <boost/serialization/split_member.hpp>
+#include <memory>
+#include <boost/serialization/vector.hpp>
+#include <boost/serialization/shared_ptr.hpp>
 
 namespace sch
 {
@@ -173,7 +176,7 @@ public:
 
   SCH_API virtual STP_BV & operator=(const STP_BV &);
 
-  SCH_API virtual STP_BV * clone() const;
+  SCH_API virtual std::shared_ptr<S_Object> clone() const;
 
   SCH_API virtual Point3 l_Support(const Vector3 & v, int & lastFeature) const;
 
@@ -214,7 +217,7 @@ public:
    *  \brief Adds a bouding volume to the object
    *  \param patch bounding volume to add to the object
    */
-  SCH_API void addPatch(STP_Feature * patch);
+  SCH_API void addPatch(std::shared_ptr<STP_Feature> patch);
 
   /*!
    *  \brief Print the support tree in a file
@@ -374,14 +377,19 @@ protected:
    */
   SCH_API void updateFastPatches();
 
-  std::vector<STP_Feature *> m_patches;
+  std::vector<std::shared_ptr<STP_Feature>> m_patches;
 
-  STP_Feature ** m_fastPatches;
-  STP_Feature ** m_lastPatches;
+  std::vector<std::shared_ptr<STP_Feature>> m_fastPatches;
+  // std::shared_ptr<std::shared_ptr<STP_Feature>> m_fastPatches;
+
+  STP_Feature* m_lastPatches = nullptr;
   int m_patchesSize;
   Scalar _r, _R;
 
   std::vector<Geometry> geometries_;
+
+private:
+  friend class boost::serialization::access;
 };
 } // namespace sch
 

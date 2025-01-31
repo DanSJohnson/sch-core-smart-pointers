@@ -21,7 +21,7 @@ public:
   SCH_API S_Cone(const Scalar & angle, const Scalar & height);
   SCH_API virtual ~S_Cone();
 
-  SCH_API virtual S_Cone * clone() const;
+  SCH_API virtual std::shared_ptr<S_Object> clone() const;
 
   SCH_API virtual Point3 l_Support(const Vector3 & v, int & lastFeature) const;
 

@@ -41,7 +41,7 @@ public:
 
   SCH_API virtual bool ray_cast(const Point3 & source, const Point3 & target, Scalar & param, Vector3 & normal) const;
 
-  SCH_API virtual STP_Feature * clone() const;
+  SCH_API virtual std::shared_ptr<STP_Feature> clone() const;
 
   SCH_API virtual int getNextBVPrime() const
   {

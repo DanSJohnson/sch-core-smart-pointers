@@ -74,7 +74,7 @@ public:
   SCH_API virtual Scalar supportH(const Vector3 & v) const;
   SCH_API virtual Point3 support(const Vector3 & v) const;
 
-  SCH_API virtual STP_Feature * clone() const;
+  SCH_API virtual std::shared_ptr<STP_Feature> clone() const;
 
   template<class Archive>
   void serialize(Archive & ar, const unsigned int /*version*/)

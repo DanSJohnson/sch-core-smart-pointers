@@ -7,6 +7,10 @@
 #include <sch/Matrix/SCH_Types.h>
 #include <sch/sch_api.h>
 #include <vector>
+#include <memory>
+#include <boost/serialization/vector.hpp>
+#include <boost/serialization/shared_ptr.hpp>
+
 namespace sch
 {
 typedef struct s_STP_VVR
@@ -106,7 +110,7 @@ public:
 
   SCH_API virtual void print() const = 0;
 
-  SCH_API virtual STP_Feature * clone() const = 0;
+  SCH_API virtual std::shared_ptr<STP_Feature> clone() const = 0;
 
   SCH_API virtual Point3 support(const Vector3 & v) const = 0;
 
@@ -124,6 +128,9 @@ public:
   {
     ar & m_nextBVPrime;
   }
+
+private:
+  friend class boost::serialization::access;
 
 protected:
   STP_Feature(void);

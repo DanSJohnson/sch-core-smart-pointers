@@ -5,6 +5,8 @@
 
 #  include <sch/Matrix/SCH_Types.h>
 #  include <sch/sch_api.h>
+#include <memory>
+
 
 namespace sch
 {
@@ -83,7 +85,7 @@ public:
   /*!
    *  \brief Returns a copy of this S_Object
    */
-  SCH_API virtual S_Object * clone() const = 0;
+  SCH_API virtual std::shared_ptr<S_Object> clone() const = 0;
 
 public:
   SCH_API S_Object(void);

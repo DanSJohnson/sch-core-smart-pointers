@@ -1,4 +1,6 @@
 #include <sch/S_Object/S_Sphere.h>
+#include <memory>
+
 
 using namespace sch;
 S_Sphere::S_Sphere(const Scalar & Rad) : radius_(Rad)
@@ -9,9 +11,9 @@ S_Sphere::S_Sphere(const Scalar & Rad) : radius_(Rad)
 
 S_Sphere::~S_Sphere(void) {}
 
-S_Sphere * S_Sphere::clone() const
+std::shared_ptr<S_Object> S_Sphere::clone() const
 {
-  return new S_Sphere(*this);
+  return std::make_shared<S_Sphere>(*this);
 }
 
 Point3 S_Sphere::l_Support(const Vector3 & v, int & /*lastFeature*/) const

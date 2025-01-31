@@ -352,7 +352,7 @@ bool STP_BigSphere::ray_cast(const Point3 & source, const Point3 & target, Scala
   return false;
 }
 
-STP_Feature * STP_BigSphere::clone() const
+std::shared_ptr<STP_Feature> STP_BigSphere::clone() const
 {
-  return new STP_BigSphere(*this);
+  return std::make_shared<STP_BigSphere>(*this);
 }

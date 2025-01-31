@@ -1,13 +1,14 @@
 #include <sch/S_Object/S_Point.h>
+#include <memory>
 
 using namespace sch;
 S_Point::S_Point() : displayRadius_(1e-3) {}
 
 S_Point::~S_Point() {}
 
-S_Point * S_Point::clone() const
+std::shared_ptr<S_Object> S_Point::clone() const
 {
-  return new S_Point(*this);
+  return std::make_shared<S_Point>(*this);
 }
 
 void S_Point::setDisplayRadius(Scalar r)

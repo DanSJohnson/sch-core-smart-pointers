@@ -807,7 +807,7 @@ Point3 STP_Torus::support(const Vector3 & v) const
   return tmp;
 }
 
-STP_Feature * STP_Torus::clone() const
+std::shared_ptr<STP_Feature> STP_Torus::clone() const
 {
-  return new STP_Torus(*this);
+  return std::make_shared<STP_Torus>(*this);
 }

@@ -1,5 +1,6 @@
 #include <sch/S_Object/S_Superellipsoid.h>
 #include <vector>
+#include <memory>
 
 using namespace sch;
 
@@ -24,9 +25,9 @@ S_Superellipsoid::S_Superellipsoid(Scalar _a, Scalar _b, Scalar _c, Scalar _epsi
 
 S_Superellipsoid::~S_Superellipsoid(void) {}
 
-S_Superellipsoid * S_Superellipsoid::clone() const
+std::shared_ptr<S_Object> S_Superellipsoid::clone() const
 {
-  return new S_Superellipsoid(*this);
+  return std::make_shared<S_Superellipsoid>(*this);
 }
 
 Point3 S_Superellipsoid::l_Support(const Vector3 & v, int & /*lastFeature*/) const

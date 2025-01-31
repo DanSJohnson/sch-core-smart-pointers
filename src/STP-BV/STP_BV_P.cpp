@@ -6,9 +6,9 @@ STP_BV_P::STP_BV_P(void) {}
 
 STP_BV_P::~STP_BV_P(void) {}
 
-STP_BV_P * STP_BV_P::clone() const
+std::shared_ptr<S_Object> STP_BV_P::clone() const
 {
-  return new STP_BV_P(*this);
+  return std::make_shared<STP_BV_P>(*this);
 }
 
 void STP_BV_P::constructFromFile(const std::string & filename)

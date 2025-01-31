@@ -1,4 +1,5 @@
 #include <sch/S_Object/S_Capsule.h>
+#include <memory>
 
 using namespace sch;
 
@@ -6,9 +7,9 @@ S_Capsule::S_Capsule(Point3 p1, Point3 p2, Scalar radius) : p1_(p1), p2_(p2), ra
 
 S_Capsule::~S_Capsule() {}
 
-S_Capsule * S_Capsule::clone() const
+std::shared_ptr<S_Object> S_Capsule::clone() const
 {
-  return new S_Capsule(*this);
+  return std::make_shared<S_Capsule>(*this);
 }
 
 Point3 S_Capsule::l_Support(const Vector3 & v, int & /*lastFeature*/) const

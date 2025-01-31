@@ -25,7 +25,7 @@ public:
 
   SCH_API const S_Polyhedron & operator=(const S_Polyhedron &);
 
-  SCH_API virtual S_Polyhedron * clone() const;
+  SCH_API virtual std::shared_ptr<S_Object> clone() const;
 
   /*!
    * \brief loads the polyhedron from a file. the file must be in the format of Qhull qconvex output, called with these

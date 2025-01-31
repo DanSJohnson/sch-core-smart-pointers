@@ -29,9 +29,9 @@ const S_Polyhedron & S_Polyhedron::operator=(const S_Polyhedron & p)
   return *this;
 }
 
-S_Polyhedron * S_Polyhedron::clone() const
+std::shared_ptr<S_Object> S_Polyhedron::clone() const
 {
-  return new S_Polyhedron(*this);
+  return std::make_shared<S_Polyhedron>(*this);
 }
 
 void S_Polyhedron::updateVertexNeighbors()
